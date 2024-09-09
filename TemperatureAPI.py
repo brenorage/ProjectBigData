@@ -8,7 +8,10 @@ from pyspark.sql.functions import avg, to_date, col
 import pyspark.sql.functions as f
 
 # %%
+from flask_cors import CORS, cross_origin
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 # %%
 # Inicializar a SparkSession
@@ -105,6 +108,7 @@ def get_temperature_by_country_date_range():
 
 # %%
 @app.route('/get_countries', methods=['GET'])
+@cross_origin()
 def get_countries():
     
     df_filtered = df.select('Country').distinct().rdd.flatMap(list).collect()
