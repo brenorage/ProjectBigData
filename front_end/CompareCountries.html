@@ -33,12 +33,11 @@
             </div>
             <div>
                 <label for="first-country-selector" class="form-label">Selecione o primeiro país:</label>
-                <select class="form-select" id="first-country-selector" onclick="createCountryOptions(this)"></select>
+                <select class="form-select" id="first-country-selector" onclick="createCountryOptions(this)" style="background-color: red;"></select>
                 <label for="second-country-selector" class="form-label">Selecione o segundo país:</label>
-                <select class="form-select" id="second-country-selector" onclick="createCountryOptions(this)"></select>
+                <select class="form-select" id="second-country-selector" onclick="createCountryOptions(this)" style="background-color: green;"></select>
+                <canvas id="myChart" style="width:100%;max-width:1024px"></canvas>
                 <button onclick="generateGraph()">Gerar grafico</button>
-
-                <canvas id="myChart" style="width:100%;max-width:700px"></canvas>
             </div>
         </div>
         <!-- Bootstrap core JS-->

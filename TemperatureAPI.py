@@ -95,12 +95,16 @@ def get_temperature_by_country_date_range():
         (df['dt'] >= start_date) &
         (df['dt'] <= end_date)
     )
+
+    print(df_filtered.show())
     
-    df_filtered = df_filtered.select('dt', 'AverageTemperature').orderBy('dt')
+    df_filtered = df_filtered.groupBy("dt").agg({'AverageTemperature':'avg'})
+    print(df_filtered.show())
+    df_filtered = df_filtered.select('dt', 'avg(AverageTemperature)').orderBy('dt')
     results = df_filtered.collect()
     
     if results:
-        temperatures = [{'date': row['dt'].strftime('%Y-%m-%d'), 'temperature': row['AverageTemperature']} for row in results]
+        temperatures = [{'date': row['dt'].strftime('%Y-%m-%d'), 'temperature': row['avg(AverageTemperature)']} for row in results]
         return jsonify({'country': country, 'temperature_data': temperatures})
     else:
         return jsonify({'error': 'Temperature data not found for the given country and date range'}), 404
@@ -111,7 +115,7 @@ def get_temperature_by_country_date_range():
 @cross_origin()
 def get_countries():
     
-    df_filtered = df.select('Country').distinct().rdd.flatMap(list).collect()
+    df_filtered = df_filtered.select('Country').distinct().rdd.flatMap(list).collect()
     
     if df_filtered:
         return jsonify({'countries': df_filtered})

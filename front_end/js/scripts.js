@@ -8,6 +8,8 @@
 
 const URL = "http://localhost:5003/"
 
+var countries = []
+
 function createCountryOptions(selector) {
     if (!selector.hasChildNodes()) {
         buildCountryOptions(selector)
@@ -15,24 +17,25 @@ function createCountryOptions(selector) {
 }
 
 async function buildCountryOptions(selector) {
-    try {
-        const response = await fetch(URL + "get_countries");
-        if (!response.ok) {
-        throw new Error(`Response status: ${response.status}`);
+    if (countries.length <= 0) {
+        try {
+            const response = await fetch(URL + "get_countries");
+            if (!response.ok) {
+                throw new Error(`Response status: ${response.status}`);
+            }
+        
+            const json = await response.json();
+            countries = json.countries; 
+        } catch (error) {
+            console.error(error.message);
         }
-    
-        const json = await response.json();
+    }
 
-        for (var country in json.countries) {
-            // var selector = document.getElementsByClassName("form-select")
-            var option = document.createElement("option")
-            option.innerHTML = json.countries[country]
-            selector.appendChild(option)
-        }
-
-        console.log(json);
-    } catch (error) {
-        console.error(error.message);
+    for (var country in countries) {
+        // var selector = document.getElementsByClassName("form-select")
+        var option = document.createElement("option")
+        option.innerHTML = countries[country]
+        selector.appendChild(option)
     }
 }
 
@@ -63,7 +66,7 @@ async function getTemperatureByDate() {
     }
 }
 
-function generateGraph() {
+async function generateGraph() {
     var firstSelector = document.getElementById("first-country-selector")
     var firstSelectedCountryIndex = firstSelector.selectedIndex
     var firstSelectedCountry = firstSelector.options[firstSelectedCountryIndex].value
@@ -72,38 +75,30 @@ function generateGraph() {
     var secondSelectedCountryIndex = secondSelector.selectedIndex
     var secondSelectedCountry = secondSelector.options[secondSelectedCountryIndex].value
 
-    firstCountryTemperatures = getTemperatures(firstSelectedCountry)
-    secondCountryTemperatures = getTemperatures(secondSelectedCountry)
+    const firstCountryTemperatures = await getTemperatures(firstSelectedCountry)
+    const secondCountryTemperatures = await getTemperatures(secondSelectedCountry)
 
-    console.log(firstCountryTemperatures)
-    console.log(secondCountryTemperatures)
+    ctx = document.getElementById('myChart')
 
-    // xValues = []
-
-    // for
-
-    // new Chart("myChart", {
-    //     type: "line",
-    //     data: {
-    //       labels: xValues,
-    //       datasets: [{
-    //         data: [860,1140,1060,1060,1070,1110,1330,2210,7830,2478],
-    //         borderColor: "red",
-    //         fill: false
-    //       },{
-    //         data: [1600,1700,1700,1900,2000,2700,4000,5000,6000,7000],
-    //         borderColor: "green",
-    //         fill: false
-    //       },{
-    //         data: [300,700,2000,5000,6000,4000,2000,1000,200,100],
-    //         borderColor: "blue",
-    //         fill: false
-    //       }]
-    //     },
-    //     options: {
-    //       legend: {display: false}
-    //     }
-    //   });
+    new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: firstCountryTemperatures.temperature_data.map(data=>data.date),
+            datasets: [{
+            data: firstCountryTemperatures.temperature_data.map(data=>data.temperature),
+            borderColor: "red",
+            fill: false
+            },{
+            data: secondCountryTemperatures.temperature_data.map(data=>data.temperature),
+            borderColor: "green",
+            fill: false
+            }]
+        },
+        options: {
+            legend: {display: false}
+        }
+        }
+    ) 
 }
 
 async function getTemperatures(country) {
@@ -111,7 +106,7 @@ async function getTemperatures(country) {
 
         const response = await fetch(URL + "get_temperature_by_country_date_range?" + new URLSearchParams({
             country: country,
-            start_date: "1780-01",
+            start_date: "2000-01",
             end_date: "2013-06"
         }));
 
@@ -121,7 +116,7 @@ async function getTemperatures(country) {
     
         const json = await response.json();
 
-        console.log(json);
+        return json
     } catch (error) {
         console.error(error.message);
     }
