@@ -31,6 +31,7 @@ async function buildCountryOptions(selector) {
         }
     }
 
+    countries = countries.sort()
     for (var country in countries) {
         // var selector = document.getElementsByClassName("form-select")
         var option = document.createElement("option")
@@ -75,15 +76,17 @@ async function generateGraph() {
     var secondSelectedCountryIndex = secondSelector.selectedIndex
     var secondSelectedCountry = secondSelector.options[secondSelectedCountryIndex].value
 
-    const firstCountryTemperatures = await getTemperatures(firstSelectedCountry)
-    const secondCountryTemperatures = await getTemperatures(secondSelectedCountry)
+    var selectedYear = document.getElementById("year-picker").value
+
+    const firstCountryTemperatures = await getTemperatures(selectedYear, firstSelectedCountry)
+    const secondCountryTemperatures = await getTemperatures(selectedYear, secondSelectedCountry)
 
     ctx = document.getElementById('myChart')
 
     new Chart(ctx, {
         type: "line",
         data: {
-            labels: firstCountryTemperatures.temperature_data.map(data=>data.date),
+            labels: firstCountryTemperatures.temperature_data.map(data=> new Date(data.date).toLocaleString('br', { month: 'long', timeZone: 'UTC' })),
             datasets: [{
             data: firstCountryTemperatures.temperature_data.map(data=>data.temperature),
             borderColor: "red",
@@ -101,13 +104,13 @@ async function generateGraph() {
     ) 
 }
 
-async function getTemperatures(country) {
+async function getTemperatures(year, country) {
     try {
 
         const response = await fetch(URL + "get_temperature_by_country_date_range?" + new URLSearchParams({
             country: country,
-            start_date: "2000-01",
-            end_date: "2013-06"
+            start_date: `${year}-01`,
+            end_date: `${year}-12`
         }));
 
         if (!response.ok) {
@@ -121,3 +124,10 @@ async function getTemperatures(country) {
         console.error(error.message);
     }
 }
+
+$('#month-date-picker').datepicker({
+    format: "MM yyyy",
+    minViewMode: 1,
+    changeYear: true,
+    autoclose: true
+});

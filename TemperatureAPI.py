@@ -115,7 +115,7 @@ def get_temperature_by_country_date_range():
 @cross_origin()
 def get_countries():
     
-    df_filtered = df_filtered.select('Country').distinct().rdd.flatMap(list).collect()
+    df_filtered = df.select('Country').distinct().rdd.flatMap(list).collect()
     
     if df_filtered:
         return jsonify({'countries': df_filtered})

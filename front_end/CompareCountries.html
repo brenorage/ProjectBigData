@@ -36,8 +36,12 @@
                 <select class="form-select" id="first-country-selector" onclick="createCountryOptions(this)" style="background-color: red;"></select>
                 <label for="second-country-selector" class="form-label">Selecione o segundo país:</label>
                 <select class="form-select" id="second-country-selector" onclick="createCountryOptions(this)" style="background-color: green;"></select>
-                <canvas id="myChart" style="width:100%;max-width:1024px"></canvas>
-                <button onclick="generateGraph()">Gerar grafico</button>
+                <label for="year-picker" class="form-label" style="display: left;">Selecione o ano que quer comparar:</label>
+                <input style="display: right;" type="number" id="year-picker" min="1743" max="2013" step="1" value="2013" />
+                <div style="border: 2px; border-color: black; display: block;">
+                    <canvas id="myChart" style="width:100%;max-width:max-content" ></canvas>
+                </div>
+                <button style="display: list-item;" onclick="generateGraph()">Gerar grafico</button>
             </div>
         </div>
         <!-- Bootstrap core JS-->
