@@ -18,6 +18,7 @@ function createCountryOptions(selector) {
 
 async function buildCountryOptions(selector) {
     if (countries.length <= 0) {
+        showLoader()
         try {
             const response = await fetch(URL + "get_countries");
             if (!response.ok) {
@@ -38,10 +39,12 @@ async function buildCountryOptions(selector) {
         option.innerHTML = countries[country]
         selector.appendChild(option)
     }
+    hideLoader()
 }
 
 async function getTemperatureByDate() {
     try {
+        showLoader()
         var selector = document.getElementById("country-selector")
         var selectedCountryIndex = selector.selectedIndex
         var selectedCountry = selector.options[selectedCountryIndex].value
@@ -58,6 +61,7 @@ async function getTemperatureByDate() {
         }
     
         const json = await response.json();
+        hideLoader()
 
         document.getElementById("result").innerText = json.average_temperature
 
@@ -68,6 +72,7 @@ async function getTemperatureByDate() {
 }
 
 async function generateGraph() {
+    showLoader()
     var firstSelector = document.getElementById("first-country-selector")
     var firstSelectedCountryIndex = firstSelector.selectedIndex
     var firstSelectedCountry = firstSelector.options[firstSelectedCountryIndex].value
@@ -90,18 +95,25 @@ async function generateGraph() {
             datasets: [{
             data: firstCountryTemperatures.temperature_data.map(data=>data.temperature),
             borderColor: "red",
-            fill: false
+            fill: false,
+            label: firstSelectedCountry
             },{
             data: secondCountryTemperatures.temperature_data.map(data=>data.temperature),
             borderColor: "green",
-            fill: false
+            fill: false,
+            label: secondSelectedCountry
             }]
         },
         options: {
-            legend: {display: false}
+            legend: {
+                display: true,
+                position: "bottom"
+            }
         }
         }
     ) 
+
+    hideLoader()
 }
 
 async function getTemperatures(year, country) {
@@ -131,3 +143,19 @@ $('#month-date-picker').datepicker({
     changeYear: true,
     autoclose: true
 });
+
+function showLoader() {
+    var loader = document.getElementById("loader")
+    var button = document.getElementById("generate-graph-button")
+    
+    loader.hidden = false
+    button.disabled = true
+}
+
+function hideLoader() {
+    var loader = document.getElementById("loader")
+    var button = document.getElementById("generate-graph-button")
+    
+    loader.hidden = true
+    button.disabled = false
+}
