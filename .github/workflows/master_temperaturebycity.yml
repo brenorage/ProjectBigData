@@ -36,7 +36,7 @@ jobs:
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
-          name: python-app
+          name: TemperatureAPI.py
           path: |
             release.zip
             !venv/
@@ -54,7 +54,7 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: python-app
+          name: TemperatureAPI.py
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
