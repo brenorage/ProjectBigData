@@ -21,7 +21,7 @@ spark = SparkSession.builder \
 
 # %%
 # Carregar o dataset limpo
-df = spark.read.load('abfss://temperaturebigdata@brenoragestorage1.dfs.core.windows.net/cleanedUnico_bytemperature_bydatabycity.csv', format='csv', header=True)
+df = spark.read.load('cleanedUnico_bytemperature_bydatabycity.csv', format='csv', header=True)
 
 # %%
 # Certificar-se de que a coluna 'dt' está no formato de data
