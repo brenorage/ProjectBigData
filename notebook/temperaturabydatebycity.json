@@ -1,0 +1,227 @@
+{
+	"name": "temperaturabydatebycity",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "temperatureData",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "a8b62da2-6057-4cc4-8022-08ca38b0b76f"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/a4b41e72-4382-486a-83f6-21735e33d69f/resourceGroups/brenorageaboud-rg/providers/Microsoft.Synapse/workspaces/temperature-bigdata/bigDataPools/temperatureData",
+				"name": "temperatureData",
+				"type": "Spark",
+				"endpoint": "https://temperature-bigdata.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/temperatureData",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"from pyspark.sql import SparkSession\n",
+					"from pyspark.sql import SparkSession\n",
+					"from pyspark.sql.functions import col, avg, year, month\n",
+					"from pyspark.sql.types import DateType"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Inicializar a SparkSession\n",
+					"spark = SparkSession.builder \\\n",
+					"    .appName(\"Global Temperature by date Analysis\") \\\n",
+					"    .getOrCreate()"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Carregar o dataset\n",
+					"df = spark.read.load('abfss://temperaturebigdata@brenoragestorage1.dfs.core.windows.net/GlobalLandTemperaturesByCity.csv', format='csv', header=True) "
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"df.printSchema()\n",
+					"df.show(5)"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "markdown",
+				"source": [
+					"Limpeza dos Dados"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"from pyspark.sql.functions import col, sum\n",
+					"\n",
+					"# Criar uma lista de expressões para contar valores nulos por coluna\n",
+					"null_counts = [sum(col(c).isNull().cast(\"int\")).alias(c) for c in df.columns]\n",
+					"\n",
+					"# Aplicar as expressões e mostrar o resultado\n",
+					"df.select(null_counts).show()"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Criar uma lista de expressões para contar valores nulos por coluna\n",
+					"null_counts = [sum(col(c).isNull().cast(\"int\")).alias(c) for c in df.columns]"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Aplicar as expressões e mostrar o resultado\n",
+					"df.select(null_counts).show()"
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"from pyspark.sql.functions import col"
+				],
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Remover linhas onde 'AverageTemperature''Country' 'City' e 'dt' são nulos\n",
+					"df_cleaned = df.dropna(subset=['AverageTemperature', 'Country', 'City', 'dt'])"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Preencher valores nulos em outras colunas com um valor padrão (opcional)\n",
+					"df_cleaned = df_cleaned.fillna({\n",
+					"    'AverageTemperatureUncertainty': 0,\n",
+					"    'City': 'Unknown',\n",
+					"    'Latitude': 'Unknown',\n",
+					"    'Longitude': 'Unknown'\n",
+					"})"
+				],
+				"execution_count": 10
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Verificar se a limpeza foi bem-sucedida\n",
+					"df_cleaned.select([sum(col(c).isNull().cast(\"int\")).alias(c) for c in df_cleaned.columns]).show()"
+				],
+				"execution_count": 11
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"from pyspark.sql.functions import avg\n",
+					"from pyspark.sql.functions import avg, to_date, col"
+				],
+				"execution_count": 12
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Certificar-se de que a coluna 'dt' está no formato de data\n",
+					"df = df.withColumn(\"dt\", to_date(col(\"dt\")))"
+				],
+				"execution_count": 13
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Adicionar colunas de mês e ano\n",
+					"df = df.withColumn(\"month\", month(col(\"dt\")))\n",
+					"df = df.withColumn(\"year\", year(col(\"dt\")))\n",
+					"df.show(5)"
+				],
+				"execution_count": 14
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					""
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Calcular a temperatura média por país, cidade e data\n",
+					"df_country_city_avg_temp = df_cleaned.groupBy(\"Country\", \"City\", \"dt\").agg(\n",
+					"    avg(\"AverageTemperature\").alias(\"AverageTemperature\")\n",
+					")"
+				],
+				"execution_count": 15
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Coalesce para um único partição\n",
+					"df_cleaned_coalesced = df_cleaned.coalesce(1)"
+				],
+				"execution_count": 16
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Salvar o dataset limpo\n",
+					"df_cleaned_coalesced.write.csv(\"abfss://temperaturebigdata@brenoragestorage1.dfs.core.windows.net/cleanedUnico_bytemperature_bydatabycity.csv\", header=True, mode=\"overwrite\")"
+				],
+				"execution_count": 17
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Interromper Spark\n",
+					"spark.stop()"
+				],
+				"execution_count": 18
+			}
+		]
+	}
+}
