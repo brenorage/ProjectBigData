@@ -1,15 +1,16 @@
 {
 	"name": "AzureBlobStorage1",
-	"type": "Microsoft.Synapse/workspaces/linkedservices",
 	"properties": {
 		"annotations": [],
 		"type": "AzureBlobStorage",
 		"typeProperties": {
-			"sasUri": "teste"
+			"containerUri": "https://brenoragestorage1.blob.core.windows.net/temperaturebigdata",
+			"authenticationType": "Anonymous"
 		},
 		"connectVia": {
 			"referenceName": "AutoResolveIntegrationRuntime",
 			"type": "IntegrationRuntimeReference"
 		}
-	}
+	},
+	"type": "Microsoft.Synapse/workspaces/linkedservices"
 }
